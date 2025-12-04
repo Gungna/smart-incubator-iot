@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-950 text-white; /* Background Gelap Utama */
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Scrollbar cantik */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a; 
+}
+::-webkit-scrollbar-thumb {
+  background: #334155; 
+  border-radius: 4px;
+}
