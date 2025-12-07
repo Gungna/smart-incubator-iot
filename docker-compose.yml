@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # 1. BROKER MQTT (Telinga IoT)
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: incubator_mqtt
+    ports:
+      - "1883:1883" # Port komunikasi ESP32
+      - "9001:9001" # Port Websocket (opsional)
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      # Buat file config mosquitto sederhana agar bisa diakses tanpa password (lokal)
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    restart: always
+
+  # 2. BACKEND (Otak Python + AI)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: incubator_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mqtt
+    volumes:
+      - ./backend/incubator.db:/app/incubator.db # Agar database tidak hilang saat restart
+      - ./backend/model_incubator.pkl:/app/model_incubator.pkl
+      - ./backend/label_encoder.pkl:/app/label_encoder.pkl
+    restart: always
+
+  # 3. FRONTEND (Wajah React)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: incubator_frontend
+    ports:
+      - "80:80" # Website bisa diakses langsung lewat IP Raspi (tanpa port aneh)
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:

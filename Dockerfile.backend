@@ -1,0 +1,20 @@
+# Gunakan Python versi ringan
+FROM python:3.9-slim
+
+# Set folder kerja
+WORKDIR /app
+
+# Install library sistem yang dibutuhkan (jika ada error build wheel)
+RUN apt-get update && apt-get install -y gcc python3-dev
+
+# Copy daftar library python
+COPY backend/requirements.txt .
+
+# Install library python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy seluruh folder backend
+COPY backend/ .
+
+# Jalankan server saat container nyala
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
