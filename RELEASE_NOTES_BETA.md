@@ -162,7 +162,27 @@ chmod +x start-raspberry-pi.sh
 ```
 
 ### Manual Installation
-Lihat [README.md](README.md) untuk panduan instalasi lengkap.
+
+**Backend:**
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# atau: venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**MQTT Broker (Mosquitto):**
+- Windows: Download dari https://mosquitto.org/download/ atau `choco install mosquitto`
+- Linux/Mac: `sudo apt install mosquitto mosquitto-clients` atau `brew install mosquitto`
 
 ---
 
@@ -190,14 +210,22 @@ Setelah instalasi, akses aplikasi melalui:
 
 ---
 
-## 📚 Dokumentasi
+## 📚 Dokumentasi Teknis
 
-- **README.md**: Panduan lengkap instalasi dan penggunaan
-- **PANDUAN-RASPBERRY-PI-INSTALL.md**: Panduan instalasi khusus Raspberry Pi
-- **PANDUAN-INSTALASI.md**: Panduan instalasi umum
-- **KODE-ESP32-COMPLETE.md**: Dokumentasi kode ESP32
-- **LOGIKA-KONTROL-SUHU.md**: Penjelasan logika kontrol suhu
-- **LOGIKA-MIST.md**: Penjelasan logika kontrol kelembapan
+### Logika Kontrol Suhu
+- **Suhu Terlalu Tinggi** (> target + 0.5°C): Lampu OFF + Kipas ON untuk mendinginkan
+- **Suhu Terlalu Rendah** (< target - 0.2°C): Kipas OFF + Lampu ON untuk menghangatkan
+- **Suhu Optimal**: Lampu ON + Kipas OFF untuk mempertahankan suhu
+
+### Logika Kontrol Kelembapan
+- **Kelembapan Rendah** (< target): MIST/Sprayer ON untuk meningkatkan kelembapan
+- **Kelembapan Optimal** (>= target): MIST/Sprayer OFF
+
+### Kode ESP32
+- Sensor DHT22 membaca suhu dan kelembapan setiap 2 detik
+- Data dikirim ke topic MQTT `inkubator/data`
+- Menerima perintah kontrol dari topic `inkubator/action`
+- Heartbeat signal setiap 5 detik ke topic `inkubator/heartbeat`
 
 ---
 
@@ -249,13 +277,16 @@ Dikembangkan dengan ❤️ untuk membantu peternak dalam proses penetasan telur 
 
 Jika mengalami masalah atau memiliki pertanyaan:
 1. Buka [Issues](https://github.com/Gungna/smart-incubator-iot/issues) di GitHub
-2. Baca dokumentasi di folder project
-3. Cek [Troubleshooting](README.md#-troubleshooting) di README
+2. Pastikan MQTT Broker (Mosquitto) sudah berjalan
+3. Cek koneksi ESP32 ke WiFi dan MQTT broker
+4. Verifikasi port 8000 (backend) dan 5173 (frontend) tidak digunakan aplikasi lain
+5. Cek log backend dan frontend untuk error messages
 
 ---
 
 **Selamat menggunakan Smart Incubator IoT Beta! 🎉**
 
 *Versi: 1.0.0-beta*  
-*Tanggal Rilis: 2025-01-27*
+*Tanggal Rilis: 2025-01-27*  
+*Status: Beta Release - Production Ready*
 
