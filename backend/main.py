@@ -103,14 +103,35 @@ def init_db():
 init_db()
 
 # === 3. LOGIC AI & TELEGRAM ===
+# Usaha load model; jika gagal, fallback ke rule-based agar status tidak UNKNOWN
 try:
     model = joblib.load("model_incubator.pkl")
     label_encoder = joblib.load("label_encoder.pkl")
-except:
+    print("✅ Model ML berhasil dimuat")
+except Exception as e:
     model = None
+    print(f"⚠️ Model ML gagal dimuat, fallback ke rule-based. Detail: {e}")
 
 last_servo_turn_time = time.time()
 last_telegram_alert = 0
+
+def fallback_ai_status(real_temp, real_hum, settings):
+    """
+    Fallback rule-based jika model ML tidak tersedia atau gagal prediksi.
+    Menghindari status UNKNOWN.
+    """
+    if not settings:
+        return "UNKNOWN"
+
+    # Danger: jauh di atas target atau kelembapan jauh di bawah target
+    if real_temp > settings.target_temp_high + 0.8 or real_hum < settings.target_hum_low - 5:
+        return "DANGER"
+
+    # Warning: keluar sedikit dari batas target
+    if (real_temp > settings.target_temp_high) or (real_temp < settings.target_temp_low - 0.3) or (real_hum < settings.target_hum_low):
+        return "WARNING"
+
+    return "NORMAL"
 
 def send_telegram(message):
     global last_telegram_alert
@@ -154,8 +175,14 @@ def on_message(client, userdata, msg):
         
         ai_status = "UNKNOWN"
         if model:
-            res = model.predict(pd.DataFrame([[real_temp, real_hum]], columns=['temperature', 'humidity']))[0]
-            ai_status = label_encoder.inverse_transform([res])[0]
+            try:
+                res = model.predict(pd.DataFrame([[real_temp, real_hum]], columns=['temperature', 'humidity']))[0]
+                ai_status = label_encoder.inverse_transform([res])[0]
+            except Exception as e:
+                print(f"⚠️ Gagal prediksi model ML, gunakan fallback rule-based. Detail: {e}")
+                ai_status = fallback_ai_status(real_temp, real_hum, settings)
+        else:
+            ai_status = fallback_ai_status(real_temp, real_hum, settings)
 
         # Kontrol Suhu
         if real_temp > settings.target_temp_high + 0.5: 

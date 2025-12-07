@@ -354,7 +354,7 @@ const Dashboard = () => {
         {/* HEADER */}
         <header className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Smart Hatchery</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Smart Incubator</h1>
             <div className="flex items-center gap-2 mt-1">
                 <div className={`w-2 h-2 rounded-full ${data.status === 'WAITING' ? 'bg-slate-500' : 'bg-green-500 animate-pulse'}`}></div>
                 <span className="text-xs text-slate-400">System Active</span>
